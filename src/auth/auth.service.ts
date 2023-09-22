@@ -2,15 +2,19 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { SingInDto, SingUpDto } from './dto';
 import { Tokens } from './types';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -19,14 +23,14 @@ export class AuthService {
   async signUpLocal(dto: SingUpDto): Promise<Tokens> {
     const hash = await this.hashData(dto.password);
 
-    const findUserByName = await this.prisma.user.findUnique({
+    const findUserByName = await this.prisma.users.findUnique({
       where: { nickname: dto.name },
     });
     if (findUserByName) {
       throw new BadRequestException('Nickname already in used');
     }
 
-    const findUserByEmail = await this.prisma.user.findUnique({
+    const findUserByEmail = await this.prisma.users.findUnique({
       where: { email: dto.email },
     });
 
@@ -34,11 +38,11 @@ export class AuthService {
       throw new BadRequestException('Email already in used');
     }
 
-    const newUser = await this.prisma.user.create({
+    const newUser = await this.prisma.users.create({
       data: {
         nickname: dto.name,
         email: dto.email,
-        hash,
+        hashedPassword: hash,
       },
     });
 
@@ -49,7 +53,7 @@ export class AuthService {
   }
 
   async signInLocal(dto: SingInDto): Promise<Tokens> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.users.findUnique({
       where: {
         email: dto.email,
       },
@@ -59,7 +63,10 @@ export class AuthService {
       throw new BadRequestException('User not found');
     }
 
-    const passwordMatches = await bcrypt.compare(dto.password, user.hash);
+    const passwordMatches = await bcrypt.compare(
+      dto.password,
+      user.hashedPassword,
+    );
 
     if (!passwordMatches) {
       throw new ForbiddenException('Invalid password');
@@ -72,21 +79,29 @@ export class AuthService {
   }
 
   async logout(userId: number): Promise<void> {
-    await this.prisma.user.update({
-      where: {
-        id: userId,
-        hashedRt: {
-          not: null,
+    try {
+      await this.prisma.users.update({
+        where: {
+          id: userId,
+          hashedRt: {
+            not: null,
+          },
         },
-      },
-      data: {
-        hashedRt: null,
-      },
-    });
+        data: {
+          hashedRt: null,
+        },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        this.logger.debug('logout function: ' + err.meta.cause);
+      } else {
+        this.logger.error('logout function: unknown error ' + err.message);
+      }
+    }
   }
 
   async refreshTokens(userId: number, rt: string): Promise<Tokens> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.users.findUnique({
       where: {
         id: userId,
       },
@@ -98,6 +113,7 @@ export class AuthService {
 
     const rtMatcher = await bcrypt.compare(rt, user.hashedRt);
 
+    console.log('refresh token match ', rtMatcher);
     if (!rtMatcher) {
       throw new ForbiddenException('Access Denied');
     }
@@ -111,7 +127,7 @@ export class AuthService {
   async updateRtHash(userId: number, rt: string): Promise<void> {
     const hash = await this.hashData(rt);
 
-    await this.prisma.user.update({
+    await this.prisma.users.update({
       where: {
         id: userId,
       },
@@ -121,8 +137,8 @@ export class AuthService {
     });
   }
 
-  hashData(data: string): Promise<string> {
-    return bcrypt.hash(data, 10);
+  async hashData(data: string): Promise<string> {
+    return await bcrypt.hash(data, 10);
   }
 
   async getTokens(userId: number, email: string): Promise<Tokens> {

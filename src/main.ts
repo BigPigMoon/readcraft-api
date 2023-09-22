@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api');
   const config = new DocumentBuilder()
     .setTitle('ReadCraftAcademyAPI')
     .setDescription('This is a read craft academy api documentation')
@@ -18,7 +19,7 @@ async function bootstrap() {
   app.enableCors({
     credentials: true,
     origin: true,
-  })
+  });
 
   await app.listen(3000);
 }
