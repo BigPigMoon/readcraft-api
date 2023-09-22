@@ -23,14 +23,14 @@ export class AuthService {
   async signUpLocal(dto: SingUpDto): Promise<Tokens> {
     const hash = await this.hashData(dto.password);
 
-    const findUserByName = await this.prisma.users.findUnique({
+    const findUserByName = await this.prisma.user.findUnique({
       where: { nickname: dto.name },
     });
     if (findUserByName) {
       throw new BadRequestException('Nickname already in used');
     }
 
-    const findUserByEmail = await this.prisma.users.findUnique({
+    const findUserByEmail = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
 
@@ -38,7 +38,7 @@ export class AuthService {
       throw new BadRequestException('Email already in used');
     }
 
-    const newUser = await this.prisma.users.create({
+    const newUser = await this.prisma.user.create({
       data: {
         nickname: dto.name,
         email: dto.email,
@@ -53,7 +53,7 @@ export class AuthService {
   }
 
   async signInLocal(dto: SingInDto): Promise<Tokens> {
-    const user = await this.prisma.users.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
       },
@@ -80,7 +80,7 @@ export class AuthService {
 
   async logout(userId: number): Promise<void> {
     try {
-      await this.prisma.users.update({
+      await this.prisma.user.update({
         where: {
           id: userId,
           hashedRt: {
@@ -101,7 +101,7 @@ export class AuthService {
   }
 
   async refreshTokens(userId: number, rt: string): Promise<Tokens> {
-    const user = await this.prisma.users.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -127,7 +127,7 @@ export class AuthService {
   async updateRtHash(userId: number, rt: string): Promise<void> {
     const hash = await this.hashData(rt);
 
-    await this.prisma.users.update({
+    await this.prisma.user.update({
       where: {
         id: userId,
       },

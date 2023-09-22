@@ -7,12 +7,22 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model users {
+model user {
   id             Int      @id @default(autoincrement())
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   email          String   @unique
   hashedPassword String
   hashedRt       String?
   nickname       String   @unique
+}
+
+model book {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+  title     String
+  author    String?
+  cover     String?
+  progress  Int
 }
