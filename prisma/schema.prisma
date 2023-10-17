@@ -7,17 +7,19 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model user {
+model User {
   id             Int      @id @default(autoincrement())
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   email          String   @unique
   hashedPassword String
   hashedRt       String?
-  nickname       String   @unique
+  name           String   @unique
+  book           Book[]
+  card           Card[]
 }
 
-model book {
+model Book {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
@@ -25,4 +27,21 @@ model book {
   author    String?
   cover     String?
   progress  Int
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+}
+
+model Card {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updateAt    DateTime @updatedAt
+  word        String?
+  translation String?
+
+  owner   User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+
+  groupId  Int?
+  group    Card?  @relation("GroupCard", fields: [groupId], references: [id])
+  elements Card[] @relation("GroupCard")
 }

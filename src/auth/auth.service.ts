@@ -24,10 +24,10 @@ export class AuthService {
     const hash = await this.hashData(dto.password);
 
     const findUserByName = await this.prisma.user.findUnique({
-      where: { nickname: dto.name },
+      where: { name: dto.name },
     });
     if (findUserByName) {
-      throw new BadRequestException('Nickname already in used');
+      throw new BadRequestException('Name already in used');
     }
 
     const findUserByEmail = await this.prisma.user.findUnique({
@@ -40,7 +40,7 @@ export class AuthService {
 
     const newUser = await this.prisma.user.create({
       data: {
-        nickname: dto.name,
+        name: dto.name,
         email: dto.email,
         hashedPassword: hash,
       },

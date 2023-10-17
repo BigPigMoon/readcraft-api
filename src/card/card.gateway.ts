@@ -1,25 +1,26 @@
 import {
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
   MessageBody,
-  ConnectedSocket,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { ApiTags } from '@nestjs/swagger';
-import { Socket, Server } from 'socket.io';
+import { Public } from '../common/decorators';
 
-@ApiTags('card')
-@WebSocketGateway()
-export class CardGateway {
-  @WebSocketServer()
-  server: Server;
-
+@WebSocketGateway({ cors: true })
+export class CardGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @Public()
   @SubscribeMessage('message')
-  handleMessage(
-    @MessageBody() data: string,
-    @ConnectedSocket() client: Socket,
-  ) {
-    // Handle received message
-    this.server.emit('message', data); // Broadcast the message to all connected clients
+  handleMessage(@MessageBody() data: string) {
+    console.log(data);
+    return { event: 'message', data: { name: 'alex', age: 10 } };
+  }
+
+  handleConnection(client: any): any {
+    console.log('connection start');
+  }
+
+  handleDisconnect(client: any): any {
+    console.log('connection close');
   }
 }

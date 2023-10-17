@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { CardGateway } from './card.gateway';
 
-@Module({})
+@Module({
+  providers: [CardGateway],
+})
 export class CardModule {}
