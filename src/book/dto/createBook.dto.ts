@@ -1,3 +1,4 @@
 export class CreateBookDto {
-  file: string;
+  path: string;
+  userId: number;
 }

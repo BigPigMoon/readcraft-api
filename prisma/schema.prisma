@@ -20,15 +20,20 @@ model User {
 }
 
 model Book {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updateAt  DateTime @updatedAt
-  title     String
-  author    String?
-  cover     String?
-  progress  Int
-  ownerId   Int
-  owner     User     @relation(fields: [ownerId], references: [id])
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updateAt    DateTime @updatedAt
+  title       String
+  filePath    String
+  author      String?
+  language    String?
+  subject     String?
+  publishDate String?
+  cover       String?
+  progress    Int
+
+  ownerId Int
+  owner   User @relation(fields: [ownerId], references: [id])
 }
 
 model Card {
