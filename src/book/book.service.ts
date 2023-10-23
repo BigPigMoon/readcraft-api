@@ -19,6 +19,7 @@ export class BookService {
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
     });
+
     if (!user) throw new ForbiddenException('User not found');
 
     const book = new EPub(dto.path, '/imagewebroot/', '/articlewebroot/');
