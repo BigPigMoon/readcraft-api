@@ -70,6 +70,7 @@ export class AuthController {
     status: HttpStatus.OK,
     description: "Пользователь разлогинен",
   })
+  @ApiBearerAuth()
   @Post("logout")
   @HttpCode(HttpStatus.OK)
   logout(@GetCurrentUser("sub") userId: number): Promise<void> {
@@ -86,6 +87,7 @@ export class AuthController {
     status: HttpStatus.FORBIDDEN,
     description: "Если токен не валиден или не может быть обновлен",
   })
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @Public()
   @UseGuards(RtGuard)
