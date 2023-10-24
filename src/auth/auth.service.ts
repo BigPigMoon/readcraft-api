@@ -3,13 +3,13 @@ import {
   ForbiddenException,
   Injectable,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
-import { SingInDto, SingUpDto } from './dto';
-import { Tokens } from './types';
-import * as bcrypt from 'bcrypt';
-import { Prisma } from '@prisma/client';
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { JwtService } from "@nestjs/jwt";
+import { SingInDto, SingUpDto } from "./dto";
+import { Tokens } from "./types";
+import * as bcrypt from "bcrypt";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class AuthService {
@@ -27,7 +27,7 @@ export class AuthService {
       where: { name: dto.name },
     });
     if (findUserByName) {
-      throw new BadRequestException('Name already in used');
+      throw new BadRequestException("Name already in used");
     }
 
     const findUserByEmail = await this.prisma.user.findUnique({
@@ -35,7 +35,7 @@ export class AuthService {
     });
 
     if (findUserByEmail) {
-      throw new BadRequestException('Email already in used');
+      throw new BadRequestException("Email already in used");
     }
 
     const newUser = await this.prisma.user.create({
@@ -60,7 +60,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException("User not found");
     }
 
     const passwordMatches = await bcrypt.compare(
@@ -69,7 +69,7 @@ export class AuthService {
     );
 
     if (!passwordMatches) {
-      throw new ForbiddenException('Invalid password');
+      throw new ForbiddenException("Invalid password");
     }
 
     const tokens = await this.getTokens(user.id, user.email);
@@ -93,9 +93,9 @@ export class AuthService {
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        this.logger.debug('logout function: ' + err.meta.cause);
+        this.logger.debug("logout function: " + err.meta.cause);
       } else {
-        this.logger.error('logout function: unknown error ' + err.message);
+        this.logger.error("logout function: unknown error " + err.message);
       }
     }
   }
@@ -108,14 +108,14 @@ export class AuthService {
     });
 
     if (!user || !user.hashedRt) {
-      throw new ForbiddenException('Access Denied');
+      throw new ForbiddenException("Access Denied");
     }
 
     const rtMatcher = await bcrypt.compare(rt, user.hashedRt);
 
-    console.log('refresh token match ', rtMatcher);
+    console.log("refresh token match ", rtMatcher);
     if (!rtMatcher) {
-      throw new ForbiddenException('Access Denied');
+      throw new ForbiddenException("Access Denied");
     }
 
     const tokens = await this.getTokens(user.id, user.email);
@@ -150,7 +150,7 @@ export class AuthService {
         },
         {
           secret: process.env.AT_SECRET_KEY,
-          expiresIn: '15m',
+          expiresIn: "15m",
         },
       ),
       this.jwtService.signAsync(
@@ -160,7 +160,7 @@ export class AuthService {
         },
         {
           secret: process.env.RT_SECRET_KEY,
-          expiresIn: '15d',
+          expiresIn: "15d",
         },
       ),
     ]);
