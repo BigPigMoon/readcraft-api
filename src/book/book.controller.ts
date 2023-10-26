@@ -12,13 +12,14 @@ import {
 } from '@nestjs/common';
 import { GetCurrentUser } from '../common/decorators';
 import { BookService } from './book.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 
 @ApiTags('book')
+@ApiBearerAuth()
 @Controller('book')
 export class BookController {
   constructor(private readonly bookService: BookService) {}
