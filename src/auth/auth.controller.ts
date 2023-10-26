@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -71,7 +72,7 @@ export class AuthController {
     description: "Пользователь разлогинен",
   })
   @ApiBearerAuth()
-  @Post("logout")
+  @Get("logout")
   @HttpCode(HttpStatus.OK)
   logout(@GetCurrentUser("sub") userId: number): Promise<void> {
     return this.authService.logout(userId);
